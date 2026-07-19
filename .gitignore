@@ -1,0 +1,16 @@
+.DS_Store
+.build/
+.swiftpm/
+.artifacts/
+.release/
+*.xcuserstate
+xcuserdata/
+*.quotaglowconfig
+*.quotatheme
+report.xml
+*-report-update.xml
+productization-report-update.xml
+background-demo-screen.png
+live-screen.png
+live-total-only.png
+settings-bg.png
