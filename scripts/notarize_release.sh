@@ -38,5 +38,5 @@ fi
 xcrun notarytool submit "${dmg_path}" --keychain-profile "${profile}" --wait
 xcrun stapler staple "${dmg_path}"
 xcrun stapler validate "${dmg_path}"
-shasum -a 256 "${zip_path}" "${dmg_path}" | tee "${release_dir}/SHA256SUMS"
+(cd "${release_dir}" && shasum -a 256 "updates/${zip_path:t}" "${dmg_path:t}") | tee "${release_dir}/SHA256SUMS"
 echo "${dmg_path}"

@@ -28,5 +28,5 @@ if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
   codesign --force --timestamp --sign "${CODESIGN_IDENTITY}" "${dmg_path}"
 fi
 
-shasum -a 256 "${zip_path}" "${dmg_path}" | tee "${release_dir}/SHA256SUMS"
+(cd "${release_dir}" && shasum -a 256 "updates/${zip_path:t}" "${dmg_path:t}") | tee "${release_dir}/SHA256SUMS"
 echo "${release_dir}"
