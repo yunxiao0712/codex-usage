@@ -1,5 +1,7 @@
 # 发布说明
 
+GitHub 自动发布的仓库配置与 Secrets 见 [REPOSITORY_SETUP.md](REPOSITORY_SETUP.md)。本页保留本机手动发布流程。
+
 ## 一次性准备
 
 1. 安装完整 Xcode，并加入 Apple Developer Program。

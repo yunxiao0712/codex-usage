@@ -7,6 +7,7 @@
 - [x] Swift Package Manager 依赖锁定。
 - [x] 本地构建、自检、ZIP、DMG 和 SHA-256 流程。
 - [x] Sparkle 自动更新代码与 appcast 工具链。
+- [x] GitHub Actions 自动签名、公证、Release 与 Pages appcast 工作流。
 - [x] 源码敏感信息扫描，无个人绝对路径和凭据。
 - [x] GitHub 名称初步检索，未发现明显同名 macOS 项目。
 

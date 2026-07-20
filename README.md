@@ -47,7 +47,7 @@ make test
 make package
 ```
 
-本地候选包使用 ad-hoc 签名，仅用于开发测试。面向公众发布前必须完成 Developer ID 签名、公证和 Sparkle 更新签名，详见 [发布说明](docs/RELEASING.md)。
+本地候选包使用 ad-hoc 签名，仅用于开发测试。面向公众发布前必须完成 Developer ID 签名、公证和 Sparkle 更新签名，详见 [发布说明](docs/RELEASING.md) 与 [GitHub 仓库设置](docs/REPOSITORY_SETUP.md)。
 
 ## 皮肤与背景
 
