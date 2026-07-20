@@ -18,6 +18,6 @@ fi
 if [[ -n "${SPARKLE_PRIVATE_KEY:-}" ]]; then
   print -rn -- "${SPARKLE_PRIVATE_KEY}" | "${tool}" --ed-key-file - "${args[@]}" "${updates_dir}"
 else
-  "${tool}" "${args[@]}" "${updates_dir}"
+  "${tool}" --account "${SPARKLE_KEY_ACCOUNT:-app.codexusagestrip.desktop}" "${args[@]}" "${updates_dir}"
 fi
 echo "${release_dir}/appcast.xml"

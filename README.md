@@ -16,17 +16,32 @@ Codex Usage Strip 是一个常驻 macOS 桌面的 Codex 每周额度组件。它
 - 自定义背景图、背景透明度和整体透明度。
 - 自定义状态话术，支持 `{remaining}`、`{used}`、`{countdown}`、`{resetTime}`、`{pace}`、`{updatedAt}`。
 - 开机启动、额度提醒、配置导入导出。
-- 通过 Sparkle 提供 EdDSA 校验的安全自动更新。
+- 通过 Sparkle 提供 EdDSA 校验的自动更新。
 
-## 运行要求
+## 安装
 
-- macOS 14 或更高版本。
-- 本机已安装并登录 ChatGPT/Codex，或已安装可执行的 Codex CLI。
-- 当前版本优先读取 `/Applications/ChatGPT.app/Contents/Resources/codex`，也支持 `CODEX_PATH` 指定路径。
+当前公开版本采用免费发布方式，不使用付费的 Apple Developer ID 证书。应用可以正常使用，但第一次启动时 macOS 会要求你手动确认一次。请只从本仓库的 [GitHub Releases](https://github.com/PengXiaoyi/codex-usage-strip/releases) 下载。
 
-Codex Usage Strip 使用本机 Codex 的 `account/rateLimits/read` 接口读取额度。该接口不是稳定的公开兼容承诺；上游格式变化时，Codex Usage Strip 可能需要同步更新。
+### 方法一：DMG 安装（推荐）
 
-## 从源码构建
+1. 打开 [最新版本下载页](https://github.com/PengXiaoyi/codex-usage-strip/releases/latest)。
+2. 下载名称以 `.dmg` 结尾的文件。
+3. 打开 DMG，把 `Codex Usage Strip.app` 拖到 `Applications`。
+4. 前往“应用程序”并打开 `Codex Usage Strip`。
+5. 如果 macOS 阻止启动，按照下方的“首次打开”操作一次。
+
+### 方法二：ZIP 安装
+
+适用于无法打开 DMG，或希望直接取得 `.app` 的用户。
+
+1. 打开 [最新版本下载页](https://github.com/PengXiaoyi/codex-usage-strip/releases/latest)。
+2. 下载名称以 `.zip` 结尾的文件并解压。
+3. 把 `Codex Usage Strip.app` 移到“应用程序”文件夹。
+4. 打开应用；如被 macOS 阻止，按照下方的“首次打开”操作一次。
+
+### 方法三：从源码构建
+
+适合希望自行检查代码或参与开发的用户：
 
 ```bash
 git clone https://github.com/PengXiaoyi/codex-usage-strip.git
@@ -41,13 +56,42 @@ open ".artifacts/Codex Usage Strip.app"
 make test
 ```
 
-生成本地 ZIP 和 DMG 候选包：
+### 首次打开
+
+由于公开安装包没有 Apple Developer ID 签名，直接双击时 macOS 可能显示“无法验证开发者”或“Apple 无法检查其是否包含恶意软件”。这是免费分发版本的预期行为：
+
+1. 先尝试打开一次应用，然后关闭提示。
+2. 打开“系统设置 → 隐私与安全性”。
+3. 滚动到“安全性”，找到被阻止的 `Codex Usage Strip`。
+4. 点击“仍要打开”，输入 Mac 登录密码并再次确认。
+
+确认后，这台 Mac 会把应用保存为例外，后续可以正常双击启动。不要为了安装本应用关闭整个系统的安全检查，也不需要运行 `xattr` 或修改 Gatekeeper。
+
+如果“仍要打开”没有出现，请先从“应用程序”中再次打开一次；该按钮通常只会在应用刚被系统阻止后显示。参见 [Apple 官方说明](https://support.apple.com/guide/mac-help/mh40616/mac)。
+
+## 运行要求
+
+- macOS 14 或更高版本。
+- 本机已安装并登录 ChatGPT/Codex，或已安装可执行的 Codex CLI。
+- 当前版本优先读取 `/Applications/ChatGPT.app/Contents/Resources/codex`，也支持 `CODEX_PATH` 指定路径。
+
+Codex Usage Strip 使用本机 Codex 的 `account/rateLimits/read` 接口读取额度。该接口不是稳定的公开兼容承诺；上游格式变化时，Codex Usage Strip 可能需要同步更新。
+
+## 打包
+
+生成本地 ZIP 和 DMG：
 
 ```bash
 make package
 ```
 
-本地候选包使用 ad-hoc 签名，仅用于开发测试。面向公众发布前必须完成 Developer ID 签名、公证和 Sparkle 更新签名，详见 [发布说明](docs/RELEASING.md) 与 [GitHub 仓库设置](docs/REPOSITORY_SETUP.md)。
+免费发布包使用 ad-hoc 签名，Sparkle 更新压缩包另行使用 EdDSA 签名校验。它不能替代 Apple Developer ID 与公证，因此首次启动仍会出现上述系统确认。发布维护方式见 [发布说明](docs/RELEASING.md) 与 [GitHub 仓库设置](docs/REPOSITORY_SETUP.md)。
+
+## 更新与卸载
+
+- 正式 Release 支持在应用菜单中检查更新；下载的更新包会经过 Sparkle EdDSA 校验。
+- 如果自动更新不可用，可以从 GitHub Releases 下载新版并覆盖“应用程序”中的旧版本，配置不会丢失。
+- 卸载时退出应用，再从“应用程序”中删除 `Codex Usage Strip.app`。如果开启过“登录时启动”，请先在设置中关闭。
 
 ## 皮肤与背景
 

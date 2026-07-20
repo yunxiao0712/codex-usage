@@ -20,13 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate tag and secrets
+      - name: Validate tag and update keys
         env:
-          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
-          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           SPARKLE_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
@@ -37,7 +32,7 @@ jobs:
             echo "Tag $GITHUB_REF_NAME does not match Info.plist version $app_version" >&2
             exit 1
           fi
-          for secret_name in DEVELOPER_ID_P12_BASE64 DEVELOPER_ID_P12_PASSWORD APPLE_ID APPLE_TEAM_ID APPLE_APP_SPECIFIC_PASSWORD SPARKLE_PUBLIC_ED_KEY SPARKLE_PRIVATE_KEY; do
+          for secret_name in SPARKLE_PUBLIC_ED_KEY SPARKLE_PRIVATE_KEY; do
             if [[ -z "${!secret_name}" ]]; then
               echo "Missing required secret: $secret_name" >&2
               exit 1
@@ -51,48 +46,13 @@ jobs:
           echo "CODEX_USAGE_STRIP_UPDATE_FEED_URL=https://${repository_owner}.github.io/${repository_name}/appcast.xml" >> "$GITHUB_ENV"
           echo "SPARKLE_DOWNLOAD_URL_PREFIX=https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" >> "$GITHUB_ENV"
 
-      - name: Import Developer ID and configure notarization
-        env:
-          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
-          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        run: |
-          set -euo pipefail
-          certificate_path="$RUNNER_TEMP/developer-id.p12"
-          keychain_path="$RUNNER_TEMP/codex-usage-strip-signing.keychain-db"
-          keychain_password="$(openssl rand -hex 32)"
-          printenv DEVELOPER_ID_P12_BASE64 | /usr/bin/base64 -D > "$certificate_path"
-          security create-keychain -p "$keychain_password" "$keychain_path"
-          security set-keychain-settings -lut 21600 "$keychain_path"
-          security unlock-keychain -p "$keychain_password" "$keychain_path"
-          security import "$certificate_path" -P "$DEVELOPER_ID_P12_PASSWORD" -A -t cert -f pkcs12 -k "$keychain_path"
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain_path"
-          security list-keychains -d user -s "$keychain_path"
-          security default-keychain -d user -s "$keychain_path"
-          signing_identity="$(security find-identity -v -p codesigning "$keychain_path" | awk -F '"' '/Developer ID Application/ {print $2; exit}')"
-          if [[ -z "$signing_identity" ]]; then
-            echo "Developer ID Application identity not found" >&2
-            exit 1
-          fi
-          xcrun notarytool store-credentials codex-usage-strip-ci \
-            --apple-id "$APPLE_ID" \
-            --team-id "$APPLE_TEAM_ID" \
-            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --keychain "$keychain_path"
-          echo "CODESIGN_IDENTITY=$signing_identity" >> "$GITHUB_ENV"
-          echo "NOTARY_PROFILE=codex-usage-strip-ci" >> "$GITHUB_ENV"
-
-      - name: Build, sign, and notarize
+      - name: Build ad-hoc signed release
         env:
           CODEX_USAGE_STRIP_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
         run: |
           ./scripts/package_release.sh
-          ./scripts/notarize_release.sh
           ./.release/app/Codex\ Usage\ Strip.app/Contents/MacOS/CodexUsageStrip --self-test
           codesign --verify --deep --strict --verbose=2 ./.release/app/Codex\ Usage\ Strip.app
-          spctl --assess --type execute --verbose=2 ./.release/app/Codex\ Usage\ Strip.app
 
       - name: Generate signed Sparkle appcast
         env:

@@ -16,23 +16,20 @@
 
 | Secret | 内容 |
 |---|---|
-| `DEVELOPER_ID_P12_BASE64` | Developer ID Application `.p12` 的 Base64 内容 |
-| `DEVELOPER_ID_P12_PASSWORD` | `.p12` 导出密码 |
-| `APPLE_ID` | Apple Developer 登录邮箱 |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
-| `APPLE_APP_SPECIFIC_PASSWORD` | Apple 专用密码 |
 | `SPARKLE_PUBLIC_ED_KEY` | 写入应用的 Sparkle EdDSA 公钥 |
 | `SPARKLE_PRIVATE_KEY` | 用于签名更新包的 Sparkle EdDSA 私钥 |
 
-私钥和证书只进入 GitHub Encrypted Secrets，不得写入仓库、Issue、Release notes 或构建日志。
+Sparkle 私钥只进入 GitHub Encrypted Secrets，不得写入仓库、Issue、Release notes 或构建日志。该密钥用于验证自动更新包，与付费的 Apple Developer ID 无关。
 
 ## 首次发布
 
 1. 确认 `Info.plist` 中版本号，例如 `2.2.0`。
 2. 在本地执行 `make test`。
 3. 推送与版本一致的 tag：`v2.2.0`。
-4. `Release` workflow 会依次完成构建、Developer ID 签名、Apple notarization、ZIP/DMG、Sparkle appcast、GitHub Release 与 Pages 部署。
+4. `Release` workflow 会依次完成 ad-hoc 签名构建、ZIP/DMG、Sparkle EdDSA appcast、GitHub Release 与 Pages 部署。
 5. 从上一版本执行一次真实自动升级后，再对外宣传下载地址。
+
+免费发布包没有 Apple Developer ID 签名与 notarization。首次启动时，用户需要按照 README 在“系统设置 → 隐私与安全性”中点击“仍要打开”。
 
 发布工作流会自动把更新源设为：
 
