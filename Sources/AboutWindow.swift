@@ -49,7 +49,7 @@ enum AppIconExporter {
     }
 }
 
-final class QuotaGlowLogoView: NSView {
+final class CodexUsageStripLogoView: NSView {
     override var intrinsicContentSize: NSSize { NSSize(width: 76, height: 76) }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -86,7 +86,7 @@ final class AboutWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "关于 QuotaGlow"
+        window.title = "关于 Codex Usage Strip"
         window.isReleasedWhenClosed = false
         window.center()
         super.init(window: window)
@@ -116,10 +116,10 @@ final class AboutWindowController: NSWindowController {
 
     private func buildUI() {
         guard let content = window?.contentView else { return }
-        let logo = QuotaGlowLogoView()
+        let logo = CodexUsageStripLogoView()
         logo.translatesAutoresizingMaskIntoConstraints = false
 
-        let title = NSTextField(labelWithString: "QuotaGlow")
+        let title = NSTextField(labelWithString: "Codex Usage Strip")
         title.font = NSFont(name: "Avenir Next Demi Bold", size: 28) ?? NSFont.systemFont(ofSize: 28, weight: .bold)
         let version = NSTextField(labelWithString: AppInfo.displayVersion)
         version.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
@@ -153,7 +153,7 @@ final class AboutWindowController: NSWindowController {
         checkButton.target = self
         checkButton.action = #selector(checkForUpdates)
 
-        let footer = NSTextField(labelWithString: "配置文件采用可移植的 .quotaglowconfig 格式")
+        let footer = NSTextField(labelWithString: "配置文件采用可移植的 .codexusagestripconfig 格式")
         footer.font = NSFont.systemFont(ofSize: 10.5)
         footer.textColor = .tertiaryLabelColor
 

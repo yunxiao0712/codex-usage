@@ -13,7 +13,7 @@
 
 ## 公开发布前必须完成
 
-- [ ] 确定 GitHub owner 与最终仓库 URL。
+- [x] 确定 GitHub owner 与最终仓库 URL：`PengXiaoyi/codex-usage-strip`。
 - [ ] 安装 Developer ID Application 证书。
 - [ ] 生成并离线备份 Sparkle EdDSA 私钥。
 - [ ] 确定 appcast HTTPS 地址并注入正式构建。

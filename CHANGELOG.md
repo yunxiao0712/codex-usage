@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 项目与应用正式更名为 Codex Usage Strip。
+- 应用包、Bundle ID、配置扩展名、发布产物和自动更新变量已统一使用新名称。
+- 首次启动会迁移旧版 QuotaGlow 的偏好设置、自定义资源与开机启动项。
+
 ### Planned
 
 - 完成首个 Developer ID 签名与 notarization 发布。

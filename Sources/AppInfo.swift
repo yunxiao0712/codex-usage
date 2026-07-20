@@ -14,7 +14,7 @@ enum AppInfo {
     }
 
     static var releaseChannel: String {
-        let value = Bundle.main.object(forInfoDictionaryKey: "QuotaGlowReleaseChannel") as? String
+        let value = Bundle.main.object(forInfoDictionaryKey: "CodexUsageStripReleaseChannel") as? String
         return value?.isEmpty == false ? value! : "local"
     }
 

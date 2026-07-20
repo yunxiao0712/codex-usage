@@ -103,7 +103,7 @@ final class ThemeStore {
         guard theme.schemaVersion == 1,
               !theme.id.isEmpty,
               !theme.name.isEmpty else {
-            throw NSError(domain: "QuotaGlow.Theme", code: 1, userInfo: [NSLocalizedDescriptionKey: "主题文件格式不受支持"])
+            throw NSError(domain: "CodexUsageStrip.Theme", code: 1, userInfo: [NSLocalizedDescriptionKey: "主题文件格式不受支持"])
         }
         let destination = try themesDirectory().appendingPathComponent("\(sanitized(theme.id)).quotatheme")
         let encoded = try JSONEncoder.pretty.encode(theme)
@@ -132,7 +132,7 @@ final class ThemeStore {
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
-        ).appendingPathComponent("QuotaGlow/Themes", isDirectory: true)
+        ).appendingPathComponent("Codex Usage Strip/Themes", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         return root
     }

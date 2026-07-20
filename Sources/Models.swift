@@ -274,7 +274,9 @@ final class AppPreferences {
         defaults.removeObject(forKey: "windowSize.\(mode.rawValue)")
     }
 
-    private init() {}
+    private init() {
+        LegacyMigration.migrateDefaults(to: defaults)
+    }
 }
 
 extension NSColor {

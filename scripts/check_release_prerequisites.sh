@@ -4,7 +4,7 @@ set -euo pipefail
 project_dir="${0:A:h:h}"
 release_status_code=0
 
-echo "QuotaGlow 发布环境"
+echo "Codex Usage Strip 发布环境"
 echo "Swift: $(swift --version | head -n 1)"
 if xcodebuild -version >/dev/null 2>&1; then
   echo "Xcode: 已安装"

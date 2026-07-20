@@ -1,6 +1,6 @@
 # 架构说明
 
-QuotaGlow 是单进程 AppKit 应用，没有业务后端。
+Codex Usage Strip 是单进程 AppKit 应用，没有业务后端。
 
 ```text
 UsageStripView / SettingsWindow / AboutWindow

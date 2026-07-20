@@ -5,6 +5,7 @@
 .release/
 *.xcuserstate
 xcuserdata/
+*.codexusagestripconfig
 *.quotaglowconfig
 *.quotatheme
 report.xml

@@ -83,7 +83,7 @@ enum SelfTest {
         ]
         try expect(CodexQuotaService.parseWeeklyQuota(from: modelOnly) == nil, "不应读取模型独立额度")
 
-        let portableConfiguration = QuotaGlowConfiguration(
+        let portableConfiguration = CodexUsageStripConfiguration(
             schemaVersion: 1,
             exportedByVersion: "2.1.0",
             exportedAt: now,
@@ -123,7 +123,7 @@ enum SelfTest {
 
     private static func expect(_ condition: @autoclosure () -> Bool, _ message: String) throws {
         guard condition() else {
-            throw NSError(domain: "QuotaGlow.SelfTest", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+            throw NSError(domain: "CodexUsageStrip.SelfTest", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
         }
     }
 }

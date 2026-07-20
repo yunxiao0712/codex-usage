@@ -10,15 +10,15 @@ if [[ -z "${profile}" ]]; then
   exit 1
 fi
 
-app_path="${release_dir}/app/QuotaGlow.app"
-zip_path="$(find "${release_dir}/updates" -maxdepth 1 -type f -name 'QuotaGlow-*.zip' -print -quit 2>/dev/null || true)"
-dmg_path="$(find "${release_dir}" -maxdepth 1 -type f -name 'QuotaGlow-*.dmg' -print -quit 2>/dev/null || true)"
+app_path="${release_dir}/app/Codex Usage Strip.app"
+zip_path="$(find "${release_dir}/updates" -maxdepth 1 -type f -name 'Codex-Usage-Strip-*.zip' -print -quit 2>/dev/null || true)"
+dmg_path="$(find "${release_dir}" -maxdepth 1 -type f -name 'Codex-Usage-Strip-*.dmg' -print -quit 2>/dev/null || true)"
 if [[ ! -d "${app_path}" || -z "${zip_path}" || -z "${dmg_path}" ]]; then
   echo "发布候选不完整，请先运行 scripts/package_release.sh。" >&2
   exit 1
 fi
 
-notary_zip="${release_dir}/.QuotaGlow-notary-upload.zip"
+notary_zip="${release_dir}/.Codex-Usage-Strip-notary-upload.zip"
 rm -f "${notary_zip}"
 ditto -c -k --sequesterRsrc --keepParent "${app_path}" "${notary_zip}"
 xcrun notarytool submit "${notary_zip}" --keychain-profile "${profile}" --wait
@@ -27,11 +27,11 @@ xcrun stapler validate "${app_path}"
 
 rm -f "${zip_path}" "${dmg_path}" "${notary_zip}"
 ditto -c -k --sequesterRsrc --keepParent "${app_path}" "${zip_path}"
-staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/quotaglow-notary-dmg.XXXXXX")"
+staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/codex-usage-strip-notary-dmg.XXXXXX")"
 trap 'rm -rf "${staging_dir}"' EXIT
-ditto "${app_path}" "${staging_dir}/QuotaGlow.app"
+ditto "${app_path}" "${staging_dir}/Codex Usage Strip.app"
 ln -s /Applications "${staging_dir}/Applications"
-hdiutil create -volname "QuotaGlow" -srcfolder "${staging_dir}" -ov -format UDZO "${dmg_path}" >/dev/null
+hdiutil create -volname "Codex Usage Strip" -srcfolder "${staging_dir}" -ov -format UDZO "${dmg_path}" >/dev/null
 if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
   codesign --force --timestamp --sign "${CODESIGN_IDENTITY}" "${dmg_path}"
 fi

@@ -48,7 +48,7 @@ jobs:
           repository_owner="$(echo "$repository_owner" | tr '[:upper:]' '[:lower:]')"
           echo "APP_VERSION=$app_version" >> "$GITHUB_ENV"
           echo "RELEASE_CHANNEL=stable" >> "$GITHUB_ENV"
-          echo "QUOTAGLOW_UPDATE_FEED_URL=https://${repository_owner}.github.io/${repository_name}/appcast.xml" >> "$GITHUB_ENV"
+          echo "CODEX_USAGE_STRIP_UPDATE_FEED_URL=https://${repository_owner}.github.io/${repository_name}/appcast.xml" >> "$GITHUB_ENV"
           echo "SPARKLE_DOWNLOAD_URL_PREFIX=https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" >> "$GITHUB_ENV"
 
       - name: Import Developer ID and configure notarization
@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           certificate_path="$RUNNER_TEMP/developer-id.p12"
-          keychain_path="$RUNNER_TEMP/quotaglow-signing.keychain-db"
+          keychain_path="$RUNNER_TEMP/codex-usage-strip-signing.keychain-db"
           keychain_password="$(openssl rand -hex 32)"
           printenv DEVELOPER_ID_P12_BASE64 | /usr/bin/base64 -D > "$certificate_path"
           security create-keychain -p "$keychain_password" "$keychain_path"
@@ -76,23 +76,23 @@ jobs:
             echo "Developer ID Application identity not found" >&2
             exit 1
           fi
-          xcrun notarytool store-credentials quotaglow-ci \
+          xcrun notarytool store-credentials codex-usage-strip-ci \
             --apple-id "$APPLE_ID" \
             --team-id "$APPLE_TEAM_ID" \
             --password "$APPLE_APP_SPECIFIC_PASSWORD" \
             --keychain "$keychain_path"
           echo "CODESIGN_IDENTITY=$signing_identity" >> "$GITHUB_ENV"
-          echo "NOTARY_PROFILE=quotaglow-ci" >> "$GITHUB_ENV"
+          echo "NOTARY_PROFILE=codex-usage-strip-ci" >> "$GITHUB_ENV"
 
       - name: Build, sign, and notarize
         env:
-          QUOTAGLOW_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
+          CODEX_USAGE_STRIP_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
         run: |
           ./scripts/package_release.sh
           ./scripts/notarize_release.sh
-          ./.release/app/QuotaGlow.app/Contents/MacOS/QuotaGlow --self-test
-          codesign --verify --deep --strict --verbose=2 ./.release/app/QuotaGlow.app
-          spctl --assess --type execute --verbose=2 ./.release/app/QuotaGlow.app
+          ./.release/app/Codex\ Usage\ Strip.app/Contents/MacOS/CodexUsageStrip --self-test
+          codesign --verify --deep --strict --verbose=2 ./.release/app/Codex\ Usage\ Strip.app
+          spctl --assess --type execute --verbose=2 ./.release/app/Codex\ Usage\ Strip.app
 
       - name: Generate signed Sparkle appcast
         env:
@@ -104,11 +104,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            ".release/QuotaGlow-${APP_VERSION}-stable.dmg" \
-            ".release/updates/QuotaGlow-${APP_VERSION}-stable.zip" \
+            ".release/Codex-Usage-Strip-${APP_VERSION}-stable.dmg" \
+            ".release/updates/Codex-Usage-Strip-${APP_VERSION}-stable.zip" \
             ".release/SHA256SUMS" \
             --verify-tag \
-            --title "QuotaGlow ${APP_VERSION}" \
+            --title "Codex Usage Strip ${APP_VERSION}" \
             --draft \
             --generate-notes
 

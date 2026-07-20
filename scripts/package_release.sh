@@ -11,18 +11,18 @@ suffix="${version}-${channel}"
 
 mkdir -p "${release_dir}" "${updates_dir}"
 OUTPUT_DIR="${app_output_dir}" "${project_dir}/scripts/build_app.sh" >/dev/null
-app_path="${app_output_dir}/QuotaGlow.app"
-zip_path="${updates_dir}/QuotaGlow-${suffix}.zip"
-dmg_path="${release_dir}/QuotaGlow-${suffix}.dmg"
+app_path="${app_output_dir}/Codex Usage Strip.app"
+zip_path="${updates_dir}/Codex-Usage-Strip-${suffix}.zip"
+dmg_path="${release_dir}/Codex-Usage-Strip-${suffix}.dmg"
 
 rm -f "${zip_path}" "${dmg_path}"
 ditto -c -k --sequesterRsrc --keepParent "${app_path}" "${zip_path}"
 
-staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/quotaglow-dmg.XXXXXX")"
+staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/codex-usage-strip-dmg.XXXXXX")"
 trap 'rm -rf "${staging_dir}"' EXIT
-ditto "${app_path}" "${staging_dir}/QuotaGlow.app"
+ditto "${app_path}" "${staging_dir}/Codex Usage Strip.app"
 ln -s /Applications "${staging_dir}/Applications"
-hdiutil create -volname "QuotaGlow" -srcfolder "${staging_dir}" -ov -format UDZO "${dmg_path}" >/dev/null
+hdiutil create -volname "Codex Usage Strip" -srcfolder "${staging_dir}" -ov -format UDZO "${dmg_path}" >/dev/null
 
 if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
   codesign --force --timestamp --sign "${CODESIGN_IDENTITY}" "${dmg_path}"

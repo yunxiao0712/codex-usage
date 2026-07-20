@@ -20,6 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        LegacyMigration.migrateApplicationSupport(preferences: preferences)
+        try? LaunchAtLoginManager.shared.migrateLegacyRegistrationIfNeeded()
         createPanel()
         createAboutController()
         createSettingsController()
@@ -315,9 +317,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
         menu.addItem(menuItem("移回桌面右下角", #selector(resetPosition)))
         menu.addItem(.separator())
         menu.addItem(menuItem("检查更新…", #selector(checkUpdateAction)))
-        menu.addItem(menuItem("关于 QuotaGlow…", #selector(showAboutAction)))
+        menu.addItem(menuItem("关于 Codex Usage Strip…", #selector(showAboutAction)))
         menu.addItem(.separator())
-        menu.addItem(menuItem("退出 QuotaGlow", #selector(quit)))
+        menu.addItem(menuItem("退出 Codex Usage Strip", #selector(quit)))
         NSMenu.popUpContextMenu(menu, with: event, for: view)
     }
 

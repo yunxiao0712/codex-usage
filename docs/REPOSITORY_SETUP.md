@@ -2,7 +2,7 @@
 
 ## 创建仓库
 
-1. 创建公开仓库，建议名称为 `QuotaGlow`。
+1. 创建公开仓库 `codex-usage-strip`。
 2. 不要让 GitHub 自动生成 README、License 或 `.gitignore`，本地仓库已经包含这些文件。
 3. 将本地 `main` 推送到远端。
 4. 在 `Settings → Pages` 中把 Source 设为 `GitHub Actions`。

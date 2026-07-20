@@ -8,7 +8,7 @@ GitHub 自动发布的仓库配置与 Secrets 见 [REPOSITORY_SETUP.md](REPOSITO
 2. 在钥匙串中安装 `Developer ID Application` 证书。
 3. 使用 Sparkle `generate_keys` 生成 EdDSA 密钥，将私钥离线备份。
 4. 确定 GitHub 仓库地址和 `appcast.xml` 的 HTTPS 地址。
-5. 将公钥写入发布环境变量 `QUOTAGLOW_PUBLIC_ED_KEY`，不要把私钥提交到仓库。
+5. 将公钥写入发布环境变量 `CODEX_USAGE_STRIP_PUBLIC_ED_KEY`，不要把私钥提交到仓库。
 6. 使用 `xcrun notarytool store-credentials` 创建钥匙串 profile。
 
 ## 构建正式候选包
@@ -16,9 +16,9 @@ GitHub 自动发布的仓库配置与 Secrets 见 [REPOSITORY_SETUP.md](REPOSITO
 ```bash
 export RELEASE_CHANNEL=stable
 export CODESIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)'
-export QUOTAGLOW_UPDATE_FEED_URL='https://example.com/appcast.xml'
-export QUOTAGLOW_PUBLIC_ED_KEY='base64-public-key'
-export NOTARY_PROFILE='quotaglow-notary'
+export CODEX_USAGE_STRIP_UPDATE_FEED_URL='https://example.com/appcast.xml'
+export CODEX_USAGE_STRIP_PUBLIC_ED_KEY='base64-public-key'
+export NOTARY_PROFILE='codex-usage-strip-notary'
 
 ./scripts/check_release_prerequisites.sh
 ./scripts/package_release.sh

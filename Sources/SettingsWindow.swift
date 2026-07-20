@@ -43,7 +43,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "QuotaGlow 设置"
+        window.title = "Codex Usage Strip 设置"
         window.minSize = NSSize(width: 620, height: 680)
         window.isReleasedWhenClosed = false
         window.center()
@@ -265,7 +265,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         configurationButtons.orientation = .horizontal
         configurationButtons.spacing = 10
 
-        let aboutButton = NSButton(title: "关于 QuotaGlow…", target: self, action: #selector(showAbout))
+        let aboutButton = NSButton(title: "关于 Codex Usage Strip…", target: self, action: #selector(showAbout))
         let note = NSTextField(wrappingLabelWithString: "配置文件包含皮肤、话术、背景图片、透明度、刷新频率和各形态尺寸；开机启动状态不会跨设备导入。")
         note.font = NSFont.systemFont(ofSize: 11)
         note.textColor = .secondaryLabelColor
@@ -539,7 +539,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
     @objc private func exportConfiguration() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [UTType(filenameExtension: ConfigurationStore.fileExtension) ?? .json]
-        panel.nameFieldStringValue = "QuotaGlow-configuration.\(ConfigurationStore.fileExtension)"
+        panel.nameFieldStringValue = "Codex-Usage-Strip-configuration.\(ConfigurationStore.fileExtension)"
         panel.message = "导出可移植配置；开机启动状态不会写入文件"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
@@ -552,9 +552,13 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
 
     @objc private func importConfiguration() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [UTType(filenameExtension: ConfigurationStore.fileExtension) ?? .json, .json]
+        panel.allowedContentTypes = [
+            UTType(filenameExtension: ConfigurationStore.fileExtension) ?? .json,
+            UTType(filenameExtension: ConfigurationStore.legacyFileExtension) ?? .json,
+            .json
+        ]
         panel.allowsMultipleSelection = false
-        panel.message = "选择 QuotaGlow 配置文件"
+        panel.message = "选择 Codex Usage Strip 配置文件；兼容旧版 .quotaglowconfig"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try ConfigurationStore.importConfiguration(from: url, preferences: preferences, themeStore: themeStore)

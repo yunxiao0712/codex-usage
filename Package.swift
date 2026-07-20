@@ -3,17 +3,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "QuotaGlow",
+    name: "CodexUsageStrip",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "QuotaGlow", targets: ["QuotaGlow"])
+        .executable(name: "CodexUsageStrip", targets: ["CodexUsageStrip"])
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.2")
     ],
     targets: [
         .executableTarget(
-            name: "QuotaGlow",
+            name: "CodexUsageStrip",
             dependencies: [
                 .product(name: "Sparkle", package: "Sparkle")
             ],

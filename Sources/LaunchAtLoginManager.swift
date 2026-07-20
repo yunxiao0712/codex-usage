@@ -4,6 +4,9 @@ import ServiceManagement
 final class LaunchAtLoginManager {
     static let shared = LaunchAtLoginManager()
 
+    private let label = "app.codexusagestrip.desktop"
+    private let legacyLabel = "app.quotaglow.desktop"
+
     var isEnabled: Bool {
         switch SMAppService.mainApp.status {
         case .enabled, .requiresApproval:
@@ -25,6 +28,7 @@ final class LaunchAtLoginManager {
                 // LaunchAgent below is the deterministic fallback for those builds.
             }
             try writeFallbackLaunchAgent()
+            try? removeLegacyFallbackLaunchAgent()
         } else {
             if SMAppService.mainApp.status == .enabled || SMAppService.mainApp.status == .requiresApproval {
                 try? SMAppService.mainApp.unregister()
@@ -32,20 +36,34 @@ final class LaunchAtLoginManager {
             if FileManager.default.fileExists(atPath: fallbackPlist.path) {
                 try FileManager.default.removeItem(at: fallbackPlist)
             }
+            try? removeLegacyFallbackLaunchAgent()
         }
+    }
+
+    func migrateLegacyRegistrationIfNeeded() throws {
+        guard FileManager.default.fileExists(atPath: legacyFallbackPlist.path) else { return }
+        if !FileManager.default.fileExists(atPath: fallbackPlist.path) {
+            try writeFallbackLaunchAgent()
+        }
+        try removeLegacyFallbackLaunchAgent()
     }
 
     private var fallbackPlist: URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/LaunchAgents/app.quotaglow.desktop.plist")
+            .appendingPathComponent("Library/LaunchAgents/\(label).plist")
+    }
+
+    private var legacyFallbackPlist: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/LaunchAgents/\(legacyLabel).plist")
     }
 
     private func writeFallbackLaunchAgent() throws {
         let executable = Bundle.main.bundleURL
-            .appendingPathComponent("Contents/MacOS/QuotaGlow")
+            .appendingPathComponent("Contents/MacOS/CodexUsageStrip")
             .path
         let payload: [String: Any] = [
-            "Label": "app.quotaglow.desktop",
+            "Label": label,
             "ProgramArguments": [executable],
             "RunAtLoad": true,
             "KeepAlive": false,
@@ -56,6 +74,12 @@ final class LaunchAtLoginManager {
         let directory = fallbackPlist.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: fallbackPlist, options: .atomic)
+    }
+
+    private func removeLegacyFallbackLaunchAgent() throws {
+        if FileManager.default.fileExists(atPath: legacyFallbackPlist.path) {
+            try FileManager.default.removeItem(at: legacyFallbackPlist)
+        }
     }
 
     private init() {}

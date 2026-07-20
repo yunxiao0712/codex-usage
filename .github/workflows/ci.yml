@@ -13,6 +13,6 @@ jobs:
       - name: Build app bundle
         run: ./build.sh
       - name: Run self-tests
-        run: ./.artifacts/QuotaGlow.app/Contents/MacOS/QuotaGlow --self-test
+        run: ./.artifacts/Codex\ Usage\ Strip.app/Contents/MacOS/CodexUsageStrip --self-test
       - name: Verify code signature
-        run: codesign --verify --deep --strict --verbose=2 ./.artifacts/QuotaGlow.app
+        run: codesign --verify --deep --strict --verbose=2 ./.artifacts/Codex\ Usage\ Strip.app

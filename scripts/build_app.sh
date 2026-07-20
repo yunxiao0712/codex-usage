@@ -4,16 +4,16 @@ set -euo pipefail
 project_dir="${0:A:h:h}"
 configuration="${CONFIGURATION:-release}"
 output_dir="${OUTPUT_DIR:-${project_dir}/.artifacts}"
-app_path="${output_dir}/QuotaGlow.app"
+app_path="${output_dir}/Codex Usage Strip.app"
 plist_path="${app_path}/Contents/Info.plist"
 
 cd "${project_dir}"
-swift build -c "${configuration}" --product QuotaGlow
+swift build -c "${configuration}" --product CodexUsageStrip
 bin_dir="$(swift build -c "${configuration}" --show-bin-path)"
 
 rm -rf "${app_path}"
 mkdir -p "${app_path}/Contents/MacOS" "${app_path}/Contents/Frameworks"
-ditto "${bin_dir}/QuotaGlow" "${app_path}/Contents/MacOS/QuotaGlow"
+ditto "${bin_dir}/CodexUsageStrip" "${app_path}/Contents/MacOS/CodexUsageStrip"
 ditto "${project_dir}/Info.plist" "${plist_path}"
 if [[ -f "${project_dir}/Resources/AppIcon.icns" ]]; then
   mkdir -p "${app_path}/Contents/Resources"
@@ -31,18 +31,18 @@ plist_buddy="/usr/libexec/PlistBuddy"
 version="${APP_VERSION:-$(${plist_buddy} -c 'Print :CFBundleShortVersionString' "${plist_path}")}"
 build="${APP_BUILD:-$(${plist_buddy} -c 'Print :CFBundleVersion' "${plist_path}")}"
 channel="${RELEASE_CHANNEL:-local}"
-feed_url="${QUOTAGLOW_UPDATE_FEED_URL:-}"
-public_key="${QUOTAGLOW_PUBLIC_ED_KEY:-}"
+feed_url="${CODEX_USAGE_STRIP_UPDATE_FEED_URL:-}"
+public_key="${CODEX_USAGE_STRIP_PUBLIC_ED_KEY:-}"
 
 ${plist_buddy} -c "Set :CFBundleShortVersionString ${version}" "${plist_path}"
 ${plist_buddy} -c "Set :CFBundleVersion ${build}" "${plist_path}"
-${plist_buddy} -c "Set :QuotaGlowReleaseChannel ${channel}" "${plist_path}"
+${plist_buddy} -c "Set :CodexUsageStripReleaseChannel ${channel}" "${plist_path}"
 ${plist_buddy} -c 'Delete :SUFeedURL' "${plist_path}" >/dev/null 2>&1 || true
 ${plist_buddy} -c 'Delete :SUPublicEDKey' "${plist_path}" >/dev/null 2>&1 || true
 
 if [[ -n "${feed_url}" || -n "${public_key}" ]]; then
   if [[ -z "${feed_url}" || -z "${public_key}" || "${feed_url}" != https://* ]]; then
-    echo "更新源必须同时提供 HTTPS QUOTAGLOW_UPDATE_FEED_URL 和 QUOTAGLOW_PUBLIC_ED_KEY。" >&2
+    echo "更新源必须同时提供 HTTPS CODEX_USAGE_STRIP_UPDATE_FEED_URL 和 CODEX_USAGE_STRIP_PUBLIC_ED_KEY。" >&2
     exit 1
   fi
   ${plist_buddy} -c "Add :SUFeedURL string ${feed_url}" "${plist_path}"

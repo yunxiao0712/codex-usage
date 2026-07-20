@@ -5,17 +5,17 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>zh_CN</string>
     <key>CFBundleDisplayName</key>
-    <string>QuotaGlow</string>
+    <string>Codex Usage Strip</string>
     <key>CFBundleExecutable</key>
-    <string>QuotaGlow</string>
+    <string>CodexUsageStrip</string>
     <key>CFBundleIdentifier</key>
-    <string>app.quotaglow.desktop</string>
+    <string>app.codexusagestrip.desktop</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>QuotaGlow</string>
+    <string>Codex Usage Strip</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -28,7 +28,7 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
-    <key>QuotaGlowReleaseChannel</key>
+    <key>CodexUsageStripReleaseChannel</key>
     <string>local</string>
     <key>SUEnableAutomaticChecks</key>
     <true/>

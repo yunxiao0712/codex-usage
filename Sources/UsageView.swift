@@ -609,7 +609,7 @@ enum SkinPreviewExporter {
             bytesPerRow: 0,
             bitsPerPixel: 0
         ) else {
-            throw NSError(domain: "QuotaGlow.Preview", code: 1, userInfo: [NSLocalizedDescriptionKey: "无法创建预览画布"])
+            throw NSError(domain: "CodexUsageStrip.Preview", code: 1, userInfo: [NSLocalizedDescriptionKey: "无法创建预览画布"])
         }
         bitmap.size = size
         NSGraphicsContext.saveGraphicsState()
@@ -617,7 +617,7 @@ enum SkinPreviewExporter {
         view.displayIgnoringOpacity(view.bounds, in: NSGraphicsContext.current!)
         NSGraphicsContext.restoreGraphicsState()
         guard let data = bitmap.representation(using: .png, properties: [:]) else {
-            throw NSError(domain: "QuotaGlow.Preview", code: 2, userInfo: [NSLocalizedDescriptionKey: "无法生成 PNG 预览"])
+            throw NSError(domain: "CodexUsageStrip.Preview", code: 2, userInfo: [NSLocalizedDescriptionKey: "无法生成 PNG 预览"])
         }
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try data.write(to: url, options: .atomic)

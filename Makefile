@@ -4,7 +4,7 @@ build:
 	./build.sh
 
 test: build
-	./.artifacts/QuotaGlow.app/Contents/MacOS/QuotaGlow --self-test
+	./.artifacts/Codex\ Usage\ Strip.app/Contents/MacOS/CodexUsageStrip --self-test
 
 package:
 	./scripts/package_release.sh

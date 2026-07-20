@@ -33,7 +33,7 @@ struct PortablePreferences: Codable {
     let windowSizes: [String: PortableSize]
 }
 
-struct QuotaGlowConfiguration: Codable {
+struct CodexUsageStripConfiguration: Codable {
     let schemaVersion: Int
     let exportedByVersion: String
     let exportedAt: Date
@@ -43,7 +43,8 @@ struct QuotaGlowConfiguration: Codable {
 }
 
 enum ConfigurationStore {
-    static let fileExtension = "quotaglowconfig"
+    static let fileExtension = "codexusagestripconfig"
+    static let legacyFileExtension = "quotaglowconfig"
 
     static func export(to url: URL, preferences: AppPreferences = .shared, themeStore: ThemeStore = .shared) throws {
         var windowSizes: [String: PortableSize] = [:]
@@ -65,7 +66,7 @@ enum ConfigurationStore {
             background = nil
         }
 
-        let configuration = QuotaGlowConfiguration(
+        let configuration = CodexUsageStripConfiguration(
             schemaVersion: 1,
             exportedByVersion: AppInfo.version,
             exportedAt: Date(),
@@ -104,11 +105,11 @@ enum ConfigurationStore {
         }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        let configuration = try decoder.decode(QuotaGlowConfiguration.self, from: data)
+        let configuration = try decoder.decode(CodexUsageStripConfiguration.self, from: data)
         try validate(configuration)
 
         let rollbackURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("QuotaGlow-rollback-\(UUID().uuidString).\(fileExtension)")
+            .appendingPathComponent("Codex-Usage-Strip-rollback-\(UUID().uuidString).\(fileExtension)")
         try export(to: rollbackURL, preferences: preferences, themeStore: themeStore)
         defer { try? FileManager.default.removeItem(at: rollbackURL) }
         do {
@@ -123,7 +124,7 @@ enum ConfigurationStore {
     }
 
     private static func apply(
-        _ configuration: QuotaGlowConfiguration,
+        _ configuration: CodexUsageStripConfiguration,
         preferences: AppPreferences,
         themeStore: ThemeStore
     ) throws {
@@ -134,7 +135,7 @@ enum ConfigurationStore {
 
         if let background = configuration.background {
             let temporary = FileManager.default.temporaryDirectory
-                .appendingPathComponent("QuotaGlow-import-\(UUID().uuidString).\(background.fileExtension)")
+                .appendingPathComponent("Codex-Usage-Strip-import-\(UUID().uuidString).\(background.fileExtension)")
             try background.data.write(to: temporary, options: .atomic)
             defer { try? FileManager.default.removeItem(at: temporary) }
             _ = try BackgroundAssetStore.importImage(from: temporary, preferences: preferences)
@@ -163,15 +164,15 @@ enum ConfigurationStore {
         }
     }
 
-    static func decodeForValidation(_ data: Data) throws -> QuotaGlowConfiguration {
+    static func decodeForValidation(_ data: Data) throws -> CodexUsageStripConfiguration {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        let configuration = try decoder.decode(QuotaGlowConfiguration.self, from: data)
+        let configuration = try decoder.decode(CodexUsageStripConfiguration.self, from: data)
         try validate(configuration)
         return configuration
     }
 
-    private static func validate(_ configuration: QuotaGlowConfiguration) throws {
+    private static func validate(_ configuration: CodexUsageStripConfiguration) throws {
         guard configuration.schemaVersion == 1 else {
             throw configurationError("不支持的配置版本：\(configuration.schemaVersion)")
         }
@@ -218,6 +219,6 @@ enum ConfigurationStore {
     }
 
     private static func configurationError(_ text: String) -> NSError {
-        NSError(domain: "QuotaGlow.Configuration", code: 1, userInfo: [NSLocalizedDescriptionKey: text])
+        NSError(domain: "CodexUsageStrip.Configuration", code: 1, userInfo: [NSLocalizedDescriptionKey: text])
     }
 }

@@ -1,10 +1,10 @@
-# QuotaGlow
+# Codex Usage Strip
 
-<p align="center"><img src="docs/images/AppIcon.png" width="128" alt="QuotaGlow 图标"></p>
+<p align="center"><img src="docs/images/AppIcon.png" width="128" alt="Codex Usage Strip 图标"></p>
 
-QuotaGlow 是一个常驻 macOS 桌面的 Codex 每周额度组件。它只显示剩余额度、进度条和刷新倒计时，不承担聊天或任务执行。
+Codex Usage Strip 是一个常驻 macOS 桌面的 Codex 每周额度组件。它只显示剩余额度、进度条和刷新倒计时，不承担聊天或任务执行。
 
-![QuotaGlow 桌面效果](docs/images/QuotaGlow-live.png)
+![Codex Usage Strip 桌面效果](docs/images/Codex-Usage-Strip-live.png)
 
 ## 核心能力
 
@@ -24,15 +24,15 @@ QuotaGlow 是一个常驻 macOS 桌面的 Codex 每周额度组件。它只显�
 - 本机已安装并登录 ChatGPT/Codex，或已安装可执行的 Codex CLI。
 - 当前版本优先读取 `/Applications/ChatGPT.app/Contents/Resources/codex`，也支持 `CODEX_PATH` 指定路径。
 
-QuotaGlow 使用本机 Codex 的 `account/rateLimits/read` 接口读取额度。该接口不是稳定的公开兼容承诺；上游格式变化时，QuotaGlow 可能需要同步更新。
+Codex Usage Strip 使用本机 Codex 的 `account/rateLimits/read` 接口读取额度。该接口不是稳定的公开兼容承诺；上游格式变化时，Codex Usage Strip 可能需要同步更新。
 
 ## 从源码构建
 
 ```bash
-git clone <your-repository-url>
-cd QuotaGlow
+git clone https://github.com/PengXiaoyi/codex-usage-strip.git
+cd codex-usage-strip
 make build
-open .artifacts/QuotaGlow.app
+open ".artifacts/Codex Usage Strip.app"
 ```
 
 首次构建会通过 Swift Package Manager 获取 Sparkle 2.9.2。执行自检：
@@ -63,7 +63,7 @@ make package
 
 ## 隐私
 
-QuotaGlow 不要求账号密码，不上传额度、背景图片或配置。额度请求由本机 Codex 进程完成。完整边界见 [PRIVACY.md](PRIVACY.md)。
+Codex Usage Strip 不要求账号密码，不上传额度、背景图片或配置。额度请求由本机 Codex 进程完成。完整边界见 [PRIVACY.md](PRIVACY.md)。
 
 ## 项目状态
 
@@ -75,4 +75,4 @@ QuotaGlow 不要求账号密码，不上传额度、背景图片或配置。额�
 
 ## 许可
 
-[MIT License](LICENSE)。QuotaGlow 是独立社区项目，与 OpenAI 无隶属或官方背书关系；Codex、ChatGPT 及相关商标归其权利人所有。
+[MIT License](LICENSE)。Codex Usage Strip 是独立社区项目，与 OpenAI 无隶属或官方背书关系；Codex、ChatGPT 及相关商标归其权利人所有。

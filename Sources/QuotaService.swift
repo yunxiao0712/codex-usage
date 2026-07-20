@@ -23,7 +23,7 @@ final class CodexQuotaService {
     private var nextRequestID = 1
     private var pending: [Int: (Result<WeeklyQuota, Error>) -> Void] = [:]
     private var buffer = Data()
-    private let queue = DispatchQueue(label: "app.quotaglow.codex-service")
+    private let queue = DispatchQueue(label: "app.codexusagestrip.codex-service")
 
     func refresh(completion: @escaping (Result<WeeklyQuota, Error>) -> Void) {
         queue.async { [weak self] in
@@ -92,8 +92,8 @@ final class CodexQuotaService {
             "id": 0,
             "params": [
                 "clientInfo": [
-                    "name": "quota_glow",
-                    "title": "QuotaGlow",
+                    "name": "codex_usage_strip",
+                    "title": "Codex Usage Strip",
                     "version": AppInfo.version
                 ]
             ]
