@@ -2,16 +2,25 @@
 
 ## [Unreleased]
 
+### Planned
+
+- 完成首个 Developer ID 签名与 notarization 发布。
+- 配置正式 Sparkle appcast 与 EdDSA 公钥。
+
+## [2.3.0] - 2026-08-12
+
+### Added
+
+- 新增 Apple 风格系统浅色、深色和蓝色皮肤。
+- 新增“方形圆环”和“顶部状态栏”显示形态。
+
 ### Changed
 
 - 项目与应用正式更名为 Codex Usage Strip。
 - 应用包、Bundle ID、配置扩展名、发布产物和自动更新变量已统一使用新名称。
 - 首次启动会迁移旧版 QuotaGlow 的偏好设置、自定义资源与开机启动项。
-
-### Planned
-
-- 完成首个 Developer ID 签名与 notarization 发布。
-- 配置正式 Sparkle appcast 与 EdDSA 公钥。
+- 精简 Apple 风格皮肤的颜色、圆角、间距、透明度和进度条密度。
+- 顶部状态栏圆环保留最小 2px 缺口，悬浮提示改为显示重置剩余时长。
 
 ## [2.2.0] - 2026-07-19
 
