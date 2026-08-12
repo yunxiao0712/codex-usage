@@ -74,14 +74,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$RELEASE_TAG" \
-            ".release/Codex-Usage-Strip-${APP_VERSION}-stable.dmg" \
-            ".release/updates/Codex-Usage-Strip-${APP_VERSION}-stable.zip" \
-            ".release/SHA256SUMS" \
-            --verify-tag \
-            --title "Codex Usage Strip ${APP_VERSION}" \
-            --draft \
-            --generate-notes
+          assets=(
+            ".release/Codex-Usage-Strip-${APP_VERSION}-stable.dmg"
+            ".release/updates/Codex-Usage-Strip-${APP_VERSION}-stable.zip"
+            ".release/SHA256SUMS"
+          )
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+            gh release edit "$RELEASE_TAG" --title "Codex Usage Strip ${APP_VERSION}"
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --verify-tag \
+              --title "Codex Usage Strip ${APP_VERSION}" \
+              --draft \
+              --generate-notes
+          fi
 
       - name: Prepare update feed
         run: |
