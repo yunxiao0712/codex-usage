@@ -12,7 +12,7 @@ Codex Usage Strip 是一个常驻 macOS 桌面的 Codex 每周额度组件。它
 - 同时显示剩余百分比、进度条、重置时间和倒计时。
 - 支持浮在所有窗口之上，或贴近桌面层显示。
 - 四角等比缩放，拖拽区域带明确光标反馈。
-- 6 套内置皮肤、3 种显示形态、5 种背景图片布局。
+- 10 套内置皮肤、8 种显示形态（含 3 种极简样式、1 种方形圆环样式和顶部状态栏模式）、5 种背景图片布局。
 - 自定义背景图、背景透明度和整体透明度。
 - 自定义状态话术，支持 `{remaining}`、`{used}`、`{countdown}`、`{resetTime}`、`{pace}`、`{updatedAt}`。
 - 开机启动、额度提醒、配置导入导出。
@@ -104,6 +104,12 @@ make package
 | ![](docs/images/skins/graphite.png) | ![](docs/images/skins/cyber.png) | ![](docs/images/skins/traffic.png) |
 
 用户可以在设置中直接选择 PNG、JPEG、WebP 或 HEIC 图片作为背景，并分别调整背景图片透明度与整个组件透明度。皮肤也可以通过 `.quotatheme` 文件导入导出。
+
+新增的 `System Light`、`System Dark` 和 `System Blue` 皮肤使用系统字体、低对比材质和单一语义色，适合搭配极简显示形态。
+
+`Square Light` 皮肤适合搭配“方形圆环”显示形态：圆环表达剩余额度，百分比固定在圆心，底部显示重置倒计时。
+
+“顶部状态栏”模式会隐藏桌面悬浮窗，仅在 macOS 状态栏显示圆形进度和剩余百分比；点击标签可刷新数据、打开设置或切换回桌面形态。
 
 ## 隐私
 

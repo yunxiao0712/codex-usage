@@ -2,8 +2,8 @@ import Foundation
 
 enum SelfTest {
     static func run() throws {
-        try expect(ThemeStore.shared.builtIns.count == 6, "应有 6 套内置皮肤")
-        try expect(Set(ThemeStore.shared.builtIns.map(\.id)).count == 6, "皮肤 ID 必须唯一")
+        try expect(ThemeStore.shared.builtIns.count == 10, "应有 10 套内置皮肤")
+        try expect(Set(ThemeStore.shared.builtIns.map(\.id)).count == 10, "皮肤 ID 必须唯一")
         try expect(BackgroundImageMode.allCases.count == 5, "应有 5 种背景图片显示方式")
         try expect(AppInfo.version == "2.2.0" && AppInfo.build == "5", "应用版本信息不一致")
         try expect(DisplayMode.allCases.allSatisfy {
@@ -33,6 +33,11 @@ enum SelfTest {
             now: now
         )
         try expect(phrase.contains("28%") && phrase.contains("2天"), "话术变量替换失败")
+        try expect(
+            PhraseEngine.coarseCountdown(to: now.addingTimeInterval(2 * 86_400 + 3 * 3_600 + 59 * 60), now: now) == "2天 3小时"
+                && PhraseEngine.coarseCountdown(to: now.addingTimeInterval(45 * 60), now: now) == "不足1小时",
+            "粗粒度倒计时格式错误"
+        )
 
         let fixture: [String: Any] = [
             "result": [
@@ -110,7 +115,7 @@ enum SelfTest {
         let decodedConfiguration = try ConfigurationStore.decodeForValidation(configurationData)
         try expect(decodedConfiguration.preferences.themeID == "graphite", "配置导出格式无法往返")
 
-        print("PASS themes=6")
+        print("PASS themes=10")
         print("PASS version=2.2.0 build=5")
         print("PASS background-modes=5")
         print("PASS four-corner-resize-bounds")

@@ -5,12 +5,22 @@ enum DisplayMode: String, CaseIterable, Codable {
     case pill
     case strip
     case card
+    case minimalNumber
+    case minimalLine
+    case minimalCard
+    case squareCircular
+    case statusBar
 
     var title: String {
         switch self {
         case .pill: return "胶囊"
         case .strip: return "横条"
         case .card: return "卡片"
+        case .minimalNumber: return "极简数字"
+        case .minimalLine: return "极简细线"
+        case .minimalCard: return "极简卡片"
+        case .squareCircular: return "方形圆环"
+        case .statusBar: return "顶部状态栏"
         }
     }
 
@@ -19,6 +29,11 @@ enum DisplayMode: String, CaseIterable, Codable {
         case .pill: return NSSize(width: 286, height: 48)
         case .strip: return NSSize(width: 340, height: 82)
         case .card: return NSSize(width: 340, height: 124)
+        case .minimalNumber: return NSSize(width: 218, height: 44)
+        case .minimalLine: return NSSize(width: 360, height: 40)
+        case .minimalCard: return NSSize(width: 320, height: 86)
+        case .squareCircular: return NSSize(width: 132, height: 132)
+        case .statusBar: return NSSize(width: 340, height: 82)
         }
     }
 

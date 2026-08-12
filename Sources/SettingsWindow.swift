@@ -12,6 +12,8 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
     private let preferences = AppPreferences.shared
     private let themeStore = ThemeStore.shared
     private let preview = UsageStripView(frame: NSRect(origin: .zero, size: DisplayMode.strip.size))
+    private var previewWidthConstraint: NSLayoutConstraint!
+    private var previewHeightConstraint: NSLayoutConstraint!
     private let themePopup = NSPopUpButton()
     private let themeDescription = NSTextField(labelWithString: "")
     private let modeControl = NSSegmentedControl(labels: DisplayMode.allCases.map(\.title), trackingMode: .selectOne, target: nil, action: nil)
@@ -90,6 +92,9 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         tabs.addTabViewItem(makeMaintenanceTab())
         content.addSubview(tabs)
 
+        previewWidthConstraint = preview.widthAnchor.constraint(equalToConstant: DisplayMode.strip.size.width)
+        previewHeightConstraint = preview.heightAnchor.constraint(equalToConstant: DisplayMode.strip.size.height)
+
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: content.topAnchor, constant: 22),
             header.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 28),
@@ -97,8 +102,8 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
 
             preview.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 18),
             preview.centerXAnchor.constraint(equalTo: content.centerXAnchor),
-            preview.widthAnchor.constraint(equalToConstant: DisplayMode.strip.size.width),
-            preview.heightAnchor.constraint(equalToConstant: DisplayMode.strip.size.height),
+            previewWidthConstraint,
+            previewHeightConstraint,
 
             tabs.topAnchor.constraint(equalTo: preview.bottomAnchor, constant: 18),
             tabs.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 22),
@@ -345,8 +350,12 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
 
     private func updatePreview() {
         let now = Date()
+        let mode = preferences.displayMode
         preview.theme = themeStore.theme(id: preferences.themeID)
-        preview.displayMode = .strip
+        preview.displayMode = mode
+        previewWidthConstraint.constant = mode.size.width
+        previewHeightConstraint.constant = mode.size.height
+        preview.setFrameSize(mode.size)
         preview.phrases = preferences.phraseSet
         preview.criticalThreshold = preferences.criticalThreshold
         preview.backgroundImage = BackgroundAssetStore.currentImage(preferences: preferences)
