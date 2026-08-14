@@ -4,6 +4,23 @@ import Foundation
 import ServiceManagement
 import UserNotifications
 
+enum StatusRingGeometry {
+    static func displayedProgress(
+        for percent: Double,
+        diameter: Double,
+        minimumGap: Double = 2,
+        completeThreshold: Double = 99.5
+    ) -> Double {
+        let progress = min(max(percent, 0), 100) / 100
+        guard progress > 0 else { return 0 }
+        if percent >= completeThreshold { return 1 }
+
+        let circumference = Double.pi * diameter
+        let maximumVisibleProgress = max(0, 1 - minimumGap / circumference)
+        return min(progress, maximumVisibleProgress)
+    }
+}
+
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, UsageStripViewDelegate {
     private let preferences = AppPreferences.shared
@@ -342,12 +359,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
             track.stroke()
 
             guard let percent else { return true }
-            let progress = CGFloat(min(max(percent, 0), 100) / 100)
-            guard progress > 0 else { return true }
+            let displayedProgress = CGFloat(StatusRingGeometry.displayedProgress(
+                for: percent,
+                diameter: Double(rect.width)
+            ))
+            guard displayedProgress > 0 else { return true }
 
-            let circumference = 2 * .pi * (rect.width / 2)
-            let maximumVisibleProgress = max(0, 1 - 2 / circumference)
-            let displayedProgress = min(progress, maximumVisibleProgress)
             let color: NSColor = percent <= 5 ? .systemRed : percent <= 20 ? .systemOrange : .white
             let arc = NSBezierPath()
             arc.appendArc(

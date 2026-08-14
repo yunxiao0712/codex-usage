@@ -5,7 +5,7 @@ enum SelfTest {
         try expect(ThemeStore.shared.builtIns.count == 10, "应有 10 套内置皮肤")
         try expect(Set(ThemeStore.shared.builtIns.map(\.id)).count == 10, "皮肤 ID 必须唯一")
         try expect(BackgroundImageMode.allCases.count == 5, "应有 5 种背景图片显示方式")
-        try expect(AppInfo.version == "2.3.0" && AppInfo.build == "6", "应用版本信息不一致")
+        try expect(AppInfo.version == "2.3.1" && AppInfo.build == "7", "应用版本信息不一致")
         try expect(DisplayMode.allCases.allSatisfy {
             $0.minimumSize.width < $0.size.width && $0.maximumSize.width > $0.size.width
                 && abs(($0.size.width / $0.size.height) - ($0.minimumSize.width / $0.minimumSize.height)) < 0.0001
@@ -37,6 +37,13 @@ enum SelfTest {
             PhraseEngine.coarseCountdown(to: now.addingTimeInterval(2 * 86_400 + 3 * 3_600 + 59 * 60), now: now) == "2天 3小时"
                 && PhraseEngine.coarseCountdown(to: now.addingTimeInterval(45 * 60), now: now) == "不足1小时",
             "粗粒度倒计时格式错误"
+        )
+        let completeRing = StatusRingGeometry.displayedProgress(for: 100, diameter: 12)
+        let roundedCompleteRing = StatusRingGeometry.displayedProgress(for: 99.5, diameter: 12)
+        let gappedRing = StatusRingGeometry.displayedProgress(for: 98, diameter: 12)
+        try expect(
+            completeRing == 1 && roundedCompleteRing == 1 && gappedRing < 0.98 && gappedRing > 0.94,
+            "状态栏圆环缺口规则错误"
         )
 
         let fixture: [String: Any] = [
@@ -116,7 +123,7 @@ enum SelfTest {
         try expect(decodedConfiguration.preferences.themeID == "graphite", "配置导出格式无法往返")
 
         print("PASS themes=10")
-        print("PASS version=2.3.0 build=6")
+        print("PASS version=2.3.1 build=7")
         print("PASS background-modes=5")
         print("PASS four-corner-resize-bounds")
         print("PASS phrase-variables")
