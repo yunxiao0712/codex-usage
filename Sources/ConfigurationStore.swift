@@ -33,6 +33,7 @@ struct PortablePreferences: Codable {
     let windowSizes: [String: PortableSize]
     var showDesktopCard: Bool? = nil
     var showDesktopWidget: Bool? = nil
+    var quotaPeriod: QuotaPeriod? = nil
 
     var desktopCardVisible: Bool {
         showDesktopCard ?? showDesktopWidget ?? (displayMode != .statusBar)
@@ -90,7 +91,8 @@ enum ConfigurationStore {
                 automaticUpdateChecks: preferences.automaticUpdateChecks,
                 windowSizes: windowSizes,
                 showDesktopCard: preferences.showDesktopCard,
-                showDesktopWidget: preferences.showDesktopCard
+                showDesktopWidget: preferences.showDesktopCard,
+                quotaPeriod: preferences.quotaPeriod
             ),
             selectedTheme: themeStore.theme(id: preferences.themeID),
             background: background
@@ -153,6 +155,7 @@ enum ConfigurationStore {
 
         let imported = configuration.preferences
         preferences.themeID = imported.themeID
+        preferences.quotaPeriod = imported.quotaPeriod ?? .weekly
         preferences.displayMode = imported.displayMode == .statusBar ? .strip : imported.displayMode
         preferences.showDesktopCard = imported.desktopCardVisible
         preferences.alwaysOnTop = imported.alwaysOnTop

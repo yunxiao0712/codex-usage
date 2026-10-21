@@ -140,7 +140,7 @@ final class AboutWindowController: NSWindowController {
         let divider = NSBox()
         divider.boxType = .separator
 
-        let description = NSTextField(wrappingLabelWithString: "一个只看 Codex 每周总额度的 macOS 桌面组件。数据通过本机 Codex 读取，不上传账户、用量或背景图片。")
+        let description = NSTextField(wrappingLabelWithString: "一个查看 Codex 5小时和每周额度的 macOS 组件。数据通过本机 Codex 读取，不上传账户、用量或背景图片。")
         description.font = NSFont.systemFont(ofSize: 13)
         description.textColor = .labelColor
         description.maximumNumberOfLines = 3

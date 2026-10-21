@@ -10,7 +10,8 @@ protocol UsageStripViewDelegate: AnyObject {
 
 final class UsageStripView: NSView {
     weak var delegate: UsageStripViewDelegate?
-    var quota: WeeklyQuota? { didSet { needsDisplay = true } }
+    var quota: QuotaWindow? { didSet { needsDisplay = true } }
+    var quotaPeriod: QuotaPeriod = .weekly { didSet { needsDisplay = true } }
     var errorText: String? { didSet { needsDisplay = true } }
     var theme: ThemeDefinition = ThemeStore.shared.builtIns[0] { didSet { needsDisplay = true } }
     var displayMode: DisplayMode = .strip { didSet { needsDisplay = true } }
@@ -302,7 +303,7 @@ final class UsageStripView: NSView {
         }
     }
 
-    private func drawPill(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawPill(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         let systemSpacing = theme.id.hasPrefix("system-")
         let barRect = NSRect(
@@ -331,7 +332,7 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawStrip(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawStrip(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         let systemSpacing = theme.id.hasPrefix("system-")
         let barRect = NSRect(
@@ -370,7 +371,7 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawCard(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawCard(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         let systemSpacing = theme.id.hasPrefix("system-")
         drawText(
@@ -429,7 +430,7 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawMinimalNumber(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawMinimalNumber(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         let dot = NSBezierPath(ovalIn: NSRect(x: 18, y: 19, width: 6, height: 6))
         theme.accentColor(for: state).setFill()
@@ -444,7 +445,7 @@ final class UsageStripView: NSView {
             numeric: true
         )
         drawText(
-            "本周剩余",
+            quota.period.remainingTitle,
             rect: NSRect(x: 112, y: 7, width: bounds.width - 126, height: 17),
             size: 10.5,
             weight: .medium,
@@ -460,7 +461,7 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawMinimalLine(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawMinimalLine(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         drawText(
             "\(Int(percent.rounded()))%",
@@ -486,10 +487,10 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawMinimalCard(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawMinimalCard(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         drawText(
-            "本周剩余",
+            quota.period.remainingTitle,
             rect: NSRect(x: 20, y: 11, width: 90, height: 18),
             size: 11,
             weight: .medium,
@@ -526,7 +527,7 @@ final class UsageStripView: NSView {
         )
     }
 
-    private func drawSquareCircular(_ quota: WeeklyQuota, state: PaceState) {
+    private func drawSquareCircular(_ quota: QuotaWindow, state: PaceState) {
         let percent = quota.remainingPercent
         let lineWidth: CGFloat = 7
         let ringSize = min(bounds.width - 36, bounds.height - 34)
@@ -639,7 +640,7 @@ final class UsageStripView: NSView {
     }
 
     private func drawLoadingOrError() {
-        let label = errorText ?? "正在读取每周额度…"
+        let label = errorText ?? "正在读取\(quotaPeriod.title)额度…"
         let center = NSRect(x: 18, y: bounds.midY - 13, width: bounds.width - 36, height: 26)
         drawText(
             label,
@@ -693,7 +694,7 @@ enum SkinPreviewExporter {
     static func export(to directory: URL) throws -> [URL] {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let now = Date()
-        let previewQuota = WeeklyQuota(
+        let previewQuota = QuotaWindow(
             usedPercent: 28,
             resetsAt: now.addingTimeInterval(4 * 86_400 + 8 * 3_600 + 31 * 60),
             windowDurationMins: 10_080,
@@ -711,7 +712,7 @@ enum SkinPreviewExporter {
     static func exportCurrent(to url: URL) throws {
         let preferences = AppPreferences.shared
         let now = Date()
-        let quota = WeeklyQuota(
+        let quota = QuotaWindow(
             usedPercent: 28,
             resetsAt: now.addingTimeInterval(4 * 86_400 + 8 * 3_600 + 31 * 60),
             windowDurationMins: 10_080,
@@ -730,7 +731,7 @@ enum SkinPreviewExporter {
 
     private static func render(
         theme: ThemeDefinition,
-        quota: WeeklyQuota,
+        quota: QuotaWindow,
         now: Date,
         backgroundImage: NSImage? = nil,
         backgroundOpacity: Double = 0.55,

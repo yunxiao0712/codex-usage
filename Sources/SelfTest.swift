@@ -5,7 +5,7 @@ enum SelfTest {
         try expect(ThemeStore.shared.builtIns.count == 10, "应有 10 套内置皮肤")
         try expect(Set(ThemeStore.shared.builtIns.map(\.id)).count == 10, "皮肤 ID 必须唯一")
         try expect(BackgroundImageMode.allCases.count == 5, "应有 5 种背景图片显示方式")
-        try expect(AppInfo.version == "2.3.2" && AppInfo.build == "8", "应用版本信息不一致")
+        try expect(AppInfo.version == "2.3.3" && AppInfo.build == "9", "应用版本信息不一致")
         let modernCodex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
         let wrapperCodex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex"
         let legacyCodex = "/Applications/ChatGPT.app/Contents/Resources/codex"
@@ -55,7 +55,7 @@ enum SelfTest {
         }, "四角缩放未固定对角锚点")
 
         let now = Date(timeIntervalSince1970: 1_800_000_000)
-        let quota = WeeklyQuota(
+        let quota = QuotaWindow(
             usedPercent: 72,
             resetsAt: now.addingTimeInterval(2 * 86_400),
             windowDurationMins: 10_080,
@@ -106,10 +106,31 @@ enum SelfTest {
                 ]
             ]
         ]
-        let parsed = CodexQuotaService.parseWeeklyQuota(from: fixture)
+        let snapshot = CodexQuotaService.parseQuotaSnapshot(from: fixture)
+        let parsed = snapshot?.quota(for: .weekly)
         try expect(parsed != nil, "无法解析每周额度")
         try expect(Int(parsed?.remainingPercent ?? -1) == 63, "剩余百分比计算错误")
         try expect(parsed?.windowDurationMins == 10_080, "未正确选择每周窗口")
+        let fiveHours = snapshot?.quota(for: .fiveHours)
+        try expect(fiveHours?.remainingPercent == 92 && fiveHours?.windowDurationMins == 300,
+                   "未正确读取5小时窗口")
+        try expect(fiveHours?.resetsAt == Date(timeIntervalSince1970: 1_800_000_100)
+            && parsed?.resetsAt == Date(timeIntervalSince1970: 1_800_500_000), "额度窗口的重置时间被混用")
+        let swapped: [String: Any] = ["result": ["rateLimits": [
+            "primary": ["usedPercent": 37, "windowDurationMins": 10_080, "resetsAt": 1_800_500_000],
+            "secondary": ["usedPercent": 8, "windowDurationMins": 300, "resetsAt": 1_800_000_100]
+        ]]]
+        let swappedSnapshot = CodexQuotaService.parseQuotaSnapshot(from: swapped)
+        try expect(swappedSnapshot?.quota(for: .fiveHours)?.remainingPercent == 92
+            && swappedSnapshot?.quota(for: .weekly)?.remainingPercent == 63,
+            "应按窗口时长识别周期，不应依赖 primary/secondary 顺序")
+        let shortOnly: [String: Any] = ["result": ["rateLimits": [
+            "primary": ["usedPercent": 10, "windowDurationMins": 300, "resetsAt": 1_800_000_100],
+            "secondary": NSNull()
+        ]]]
+        let shortSnapshot = CodexQuotaService.parseQuotaSnapshot(from: shortOnly)
+        try expect(shortSnapshot?.quota(for: .fiveHours)?.remainingPercent == 90
+            && shortSnapshot?.quota(for: .weekly) == nil, "仅有5小时额度时仍应能读取，缺失周额度不能当成100%")
 
         let totalFallback: [String: Any] = [
             "result": [
@@ -125,8 +146,10 @@ enum SelfTest {
                 ]
             ]
         ]
-        try expect(Int(CodexQuotaService.parseWeeklyQuota(from: totalFallback)?.remainingPercent ?? -1) == 59,
+        let fallbackSnapshot = CodexQuotaService.parseQuotaSnapshot(from: totalFallback)
+        try expect(Int(fallbackSnapshot?.quota(for: .weekly)?.remainingPercent ?? -1) == 59,
                    "未固定读取 codex 总额度")
+        try expect(fallbackSnapshot?.quota(for: .fiveHours) == nil, "缺失5小时额度不能回退到每周额度")
 
         let modelOnly: [String: Any] = [
             "result": [
@@ -138,7 +161,7 @@ enum SelfTest {
                 ]
             ]
         ]
-        try expect(CodexQuotaService.parseWeeklyQuota(from: modelOnly) == nil, "不应读取模型独立额度")
+        try expect(CodexQuotaService.parseQuotaSnapshot(from: modelOnly) == nil, "不应读取模型独立额度")
 
         let portableConfiguration = CodexUsageStripConfiguration(
             schemaVersion: 1,
@@ -157,7 +180,8 @@ enum SelfTest {
                 phraseSet: .standard,
                 automaticUpdateChecks: true,
                 windowSizes: ["strip": PortableSize(DisplayMode.strip.size)],
-                showDesktopCard: false
+                showDesktopCard: false,
+                quotaPeriod: .fiveHours
             ),
             selectedTheme: ThemeStore.shared.builtIns[0],
             background: nil
@@ -168,9 +192,11 @@ enum SelfTest {
         let decodedConfiguration = try ConfigurationStore.decodeForValidation(configurationData)
         try expect(decodedConfiguration.preferences.themeID == "graphite", "配置导出格式无法往返")
         try expect(decodedConfiguration.preferences.showDesktopCard == false, "未保留卡片隐藏设置")
+        try expect(decodedConfiguration.preferences.quotaPeriod == .fiveHours, "未保留5小时额度周期选择")
         var legacyObject = try JSONSerialization.jsonObject(with: configurationData) as! [String: Any]
         var legacyPreferences = legacyObject["preferences"] as! [String: Any]
         legacyPreferences.removeValue(forKey: "showDesktopCard")
+        legacyPreferences.removeValue(forKey: "quotaPeriod")
         legacyPreferences["displayMode"] = "statusBar"
         legacyObject["preferences"] = legacyPreferences
         let legacyData = try JSONSerialization.data(withJSONObject: legacyObject)
@@ -178,6 +204,7 @@ enum SelfTest {
         try expect(legacyConfiguration.preferences.showDesktopCard == nil
             && legacyConfiguration.preferences.displayMode == .statusBar, "无法读取旧版状态栏配置")
         try expect(!legacyConfiguration.preferences.desktopCardVisible, "旧版状态栏配置不应显示卡片")
+        try expect((legacyConfiguration.preferences.quotaPeriod ?? .weekly) == .weekly, "旧配置应默认每周额度")
         var upstreamPreferences = portableConfiguration.preferences
         upstreamPreferences.showDesktopCard = nil
         upstreamPreferences.showDesktopWidget = false
@@ -186,13 +213,15 @@ enum SelfTest {
         try expect(!upstreamDecoded.desktopCardVisible, "未保留上游桌面悬浮条隐藏设置")
 
         print("PASS themes=10")
-        print("PASS version=2.3.2 build=8")
+        print("PASS version=2.3.3 build=9")
         print("PASS codex-path-detection")
         print("PASS launch-at-login-stale-path-validation")
         print("PASS background-modes=5")
         print("PASS four-corner-resize-bounds")
         print("PASS phrase-variables")
-        print("PASS weekly-parser")
+        print("PASS five-hour-and-weekly-parser")
+        print("PASS quota-window-order-and-missing-windows")
+        print("PASS quota-period-configuration")
         print("PASS total-quota-only")
         print("PASS portable-configuration")
         print("PASS desktop-card-configuration-compatibility")

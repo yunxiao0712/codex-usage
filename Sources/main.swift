@@ -61,8 +61,14 @@ if let importIndex = CommandLine.arguments.firstIndex(of: "--import-background")
     service.refresh { result in
         service.stop()
         switch result {
-        case .success(let quota):
-            print("PASS live-weekly-quota remaining=\(Int(quota.remainingPercent.rounded()))%")
+        case .success(let snapshot):
+            for period in QuotaPeriod.allCases {
+                if let quota = snapshot.quota(for: period) {
+                    print("PASS live-quota period=\(period.rawValue) remaining=\(Int(quota.remainingPercent.rounded()))% resets-in=\(PhraseEngine.countdown(to: quota.resetsAt))")
+                } else {
+                    print("UNAVAILABLE period=\(period.rawValue)")
+                }
+            }
             exit(EXIT_SUCCESS)
         case .failure(let error):
             fputs("FAIL \(error.localizedDescription)\n", stderr)

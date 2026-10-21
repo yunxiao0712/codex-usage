@@ -26,7 +26,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
     private let preferences = AppPreferences.shared
     private let service = CodexQuotaService()
     private let appUpdateController = AppUpdateController()
-    private var quotaError: String?
+    private var quotaSnapshot: QuotaSnapshot?
+    private var refreshError: String?
+    private var displayedQuotaPeriod: QuotaPeriod?
+    private var quotaError: String? {
+        if let quotaSnapshot, quotaSnapshot.quota(for: preferences.quotaPeriod) == nil {
+            return QuotaError.noQuotaWindow(preferences.quotaPeriod).localizedDescription
+        }
+        return refreshError
+    }
     private var isRefreshing = false
     private var panel: NSPanel!
     private var statusItem: NSStatusItem?
@@ -143,6 +151,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
     }
 
     private func applyPreferences(rescheduleRefresh: Bool) {
+        if displayedQuotaPeriod != preferences.quotaPeriod {
+            displayedQuotaPeriod = preferences.quotaPeriod
+            lastNotifiedState = nil
+            applySelectedQuota()
+        }
         let selectedTheme = ThemeStore.shared.theme(id: preferences.themeID)
         usageView.theme = selectedTheme
         usageView.displayMode = preferences.displayMode
@@ -226,33 +239,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
             guard let self else { return }
             self.isRefreshing = false
             switch result {
-            case .success(let quota):
-                self.quotaError = nil
-                self.usageView.errorText = nil
-                self.usageView.quota = quota
-                self.notifyIfNeeded(quota)
+            case .success(let snapshot):
+                self.refreshError = nil
+                self.quotaSnapshot = snapshot
+                self.applySelectedQuota()
+                if let quota = self.usageView.quota { self.notifyIfNeeded(quota) }
             case .failure(let error):
-                self.quotaError = error.localizedDescription
-                if self.usageView.quota == nil {
-                    self.usageView.errorText = error.localizedDescription
-                }
+                self.refreshError = error.localizedDescription
+                self.applySelectedQuota()
             }
             self.updateStatusItem(rebuildMenu: true)
         }
     }
 
-    private func notifyIfNeeded(_ quota: WeeklyQuota) {
+    private func applySelectedQuota() {
+        usageView.quotaPeriod = preferences.quotaPeriod
+        usageView.quota = quotaSnapshot?.quota(for: preferences.quotaPeriod)
+        usageView.errorText = usageView.quota == nil ? quotaError : nil
+    }
+
+    private func notifyIfNeeded(_ quota: QuotaWindow) {
         guard preferences.notificationsEnabled else { return }
         let state = quota.paceState(criticalThreshold: preferences.criticalThreshold)
         defer { lastNotifiedState = state }
         guard state != lastNotifiedState, state == .fast || state == .critical else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = state == .critical ? "Codex 周额度接近耗尽" : "Codex 本周消耗偏快"
+        content.title = "Codex \(quota.period.title)额度" + (state == .critical ? "接近耗尽" : "消耗偏快")
         content.body = PhraseEngine.phrase(for: quota, state: state, phrases: preferences.phraseSet)
         content.sound = .default
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: "quota-\(state.rawValue)", content: content, trigger: nil)
+            UNNotificationRequest(identifier: "quota-\(quota.period.rawValue)-\(state.rawValue)", content: content, trigger: nil)
         )
     }
 
@@ -355,9 +372,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
         button.imagePosition = .imageLeft
         button.imageScaling = .scaleProportionallyDown
         button.attributedTitle = NSAttributedString(string: title, attributes: titleAttributes)
-        button.toolTip = quota.map { "Codex 额度重置还剩 \(PhraseEngine.coarseCountdown(to: $0.resetsAt))" }
-            ?? usageView.errorText ?? "正在读取 Codex 周额度"
-        button.setAccessibilityLabel(button.toolTip ?? "Codex 周额度")
+        button.toolTip = quota.map {
+            let countdown = preferences.quotaPeriod == .fiveHours
+                ? PhraseEngine.countdown(to: $0.resetsAt)
+                : PhraseEngine.coarseCountdown(to: $0.resetsAt)
+            return "Codex \(preferences.quotaPeriod.title)额度重置还剩 \(countdown)"
+        } ?? usageView.errorText ?? "正在读取 Codex \(preferences.quotaPeriod.title)额度"
+        button.setAccessibilityLabel("Codex \(preferences.quotaPeriod.title)剩余 \(title)，\(button.toolTip ?? "")")
     }
 
     private func makeStatusRingImage(percent: Double?) -> NSImage {
@@ -405,15 +426,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
 
     private func makeControlMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.autoenablesItems = false
         if let quotaError {
             let message = usageView.quota == nil ? quotaError : "刷新失败，显示上次数据：\(quotaError)"
-            menu.addItem(NSMenuItem(title: message, action: nil, keyEquivalent: ""))
+            let errorItem = NSMenuItem(title: message, action: nil, keyEquivalent: "")
+            errorItem.isEnabled = false
+            menu.addItem(errorItem)
             menu.addItem(.separator())
         }
         menu.addItem(menuItem("打开设置…", #selector(openSettings)))
         let refresh = menuItem(isRefreshing ? "正在刷新…" : "立即刷新", #selector(refreshAction))
         refresh.isEnabled = !isRefreshing
         menu.addItem(refresh)
+        let periodRoot = NSMenuItem(title: "额度周期：\(preferences.quotaPeriod.title)", action: nil, keyEquivalent: "")
+        let periodMenu = NSMenu()
+        for period in QuotaPeriod.allCases {
+            let item = menuItem(period.title, #selector(selectQuotaPeriod(_:)))
+            item.representedObject = period.rawValue
+            item.state = preferences.quotaPeriod == period ? .on : .off
+            periodMenu.addItem(item)
+        }
+        menu.setSubmenu(periodMenu, for: periodRoot)
+        menu.addItem(periodRoot)
         let desktopCard = menuItem("显示桌面卡片", #selector(toggleDesktopCard))
         desktopCard.state = preferences.showDesktopCard ? .on : .off
         menu.addItem(desktopCard)
@@ -488,6 +522,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, Usag
         guard let id = sender.representedObject as? String else { return }
         preferences.themeID = id
         applyPreferences(rescheduleRefresh: false)
+    }
+
+    @objc private func selectQuotaPeriod(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let period = QuotaPeriod(rawValue: raw) else { return }
+        preferences.quotaPeriod = period
+        applyPreferences(rescheduleRefresh: false)
+        if quotaSnapshot == nil { refreshNow() }
     }
 
     @objc private func selectMode(_ sender: NSMenuItem) {

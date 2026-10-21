@@ -20,7 +20,7 @@ final class MenuBarController: NSObject {
         item.button?.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
         item.button?.target = self
         item.button?.action = #selector(togglePopover)
-        item.button?.setAccessibilityLabel("Codex 每周额度")
+        item.button?.setAccessibilityLabel("Codex 额度")
         popover.behavior = .transient
         popover.contentSize = NSSize(width: 280, height: 286)
         let controller = NSViewController()
@@ -30,7 +30,7 @@ final class MenuBarController: NSObject {
         let heading = NSTextField(labelWithString: "Codex")
         heading.font = .systemFont(ofSize: 14, weight: .semibold)
         percent.font = .monospacedDigitSystemFont(ofSize: 34, weight: .medium)
-        let caption = NSTextField(labelWithString: "本周剩余")
+        let caption = NSTextField(labelWithString: "剩余额度")
         caption.font = .systemFont(ofSize: 11)
         caption.textColor = .secondaryLabelColor
         let resetLabel = NSTextField(labelWithString: "距离重置")
@@ -77,7 +77,7 @@ final class MenuBarController: NSObject {
         update(quota: nil, error: nil, refreshing: true)
     }
 
-    func update(quota: WeeklyQuota?, error: String?, refreshing: Bool, now: Date = Date()) {
+    func update(quota: QuotaWindow?, error: String?, refreshing: Bool, now: Date = Date()) {
         let title = MenuBarText.title(quota: quota, error: error, now: now)
         if item.button?.title != title {
             item.button?.title = title
@@ -90,12 +90,12 @@ final class MenuBarController: NSObject {
             countdown.stringValue = MenuBarText.countdown(to: quota.resetsAt, now: now)
             progress.fraction = quota.remainingPercent / 100
             let reset = quota.resetsAt.formatted(date: .abbreviated, time: .shortened)
-            item.button?.toolTip = "Codex 本周剩余 \(percent.stringValue)\n重置时间：\(reset)"
+            item.button?.toolTip = "Codex \(quota.period.title)剩余 \(percent.stringValue)\n重置时间：\(reset)"
         } else {
             percent.stringValue = "—"
             countdown.stringValue = error == nil ? "正在读取…" : "暂不可用"
             progress.fraction = 0
-            item.button?.toolTip = error ?? "正在读取 Codex 每周额度"
+            item.button?.toolTip = error ?? "正在读取 Codex 额度"
         }
         let expired = quota.map { $0.resetsAt <= now } ?? false
         message.stringValue = error.map { quota == nil ? $0 : "刷新失败，显示上次数据：\($0)" }
@@ -116,7 +116,7 @@ final class MenuBarController: NSObject {
 }
 
 struct MenuBarText {
-    static func title(quota: WeeklyQuota?, error: String?, now: Date = Date()) -> String {
+    static func title(quota: QuotaWindow?, error: String?, now: Date = Date()) -> String {
         guard let quota else { return error == nil ? "Codex · …" : "Codex · —" }
         return "\(Int(quota.remainingPercent.rounded()))% · \(countdown(to: quota.resetsAt, now: now))"
     }

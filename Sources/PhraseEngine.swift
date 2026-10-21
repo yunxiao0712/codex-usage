@@ -2,7 +2,7 @@ import Foundation
 
 struct PhraseEngine {
     static func phrase(
-        for quota: WeeklyQuota,
+        for quota: QuotaWindow,
         state: PaceState,
         phrases: PhraseSet,
         now: Date = Date()

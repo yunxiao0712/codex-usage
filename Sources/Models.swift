@@ -126,11 +126,32 @@ enum PaceState: String, CaseIterable {
     }
 }
 
-struct WeeklyQuota {
+enum QuotaPeriod: String, CaseIterable, Codable {
+    case fiveHours
+    case weekly
+
+    var title: String { self == .fiveHours ? "5 小时" : "每周" }
+    var remainingTitle: String { self == .fiveHours ? "5小时剩余" : "本周剩余" }
+    var windowDurationMins: Double { self == .fiveHours ? 300 : 10_080 }
+
+    func matches(duration: Double) -> Bool {
+        self == .fiveHours ? duration == 300 : duration >= 10_000
+    }
+}
+
+struct QuotaSnapshot {
+    let windows: [QuotaPeriod: QuotaWindow]
+
+    func quota(for period: QuotaPeriod) -> QuotaWindow? { windows[period] }
+}
+
+struct QuotaWindow {
     let usedPercent: Double
     let resetsAt: Date
     let windowDurationMins: Double
     let updatedAt: Date
+
+    var period: QuotaPeriod { QuotaPeriod.fiveHours.matches(duration: windowDurationMins) ? .fiveHours : .weekly }
 
     var remainingPercent: Double {
         min(max(100 - usedPercent, 0), 100)
@@ -156,7 +177,7 @@ struct PhraseSet: Codable, Equatable {
     static let standard = PhraseSet(
         ample: "额度充足，适合开启大任务",
         steady: "节奏正常，按计划推进",
-        fast: "本周消耗偏快，先做关键任务",
+        fast: "额度消耗偏快，先做关键任务",
         critical: "额度不多了，建议留给关键任务"
     )
 
@@ -194,6 +215,11 @@ final class AppPreferences {
     var displayMode: DisplayMode {
         get { DisplayMode(rawValue: defaults.string(forKey: "displayMode") ?? "strip") ?? .strip }
         set { defaults.set(newValue.rawValue, forKey: "displayMode") }
+    }
+
+    var quotaPeriod: QuotaPeriod {
+        get { QuotaPeriod(rawValue: defaults.string(forKey: "quotaPeriod") ?? "") ?? .weekly }
+        set { defaults.set(newValue.rawValue, forKey: "quotaPeriod") }
     }
 
     var showDesktopCard: Bool {

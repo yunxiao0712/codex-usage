@@ -18,6 +18,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
     private let themeDescription = NSTextField(labelWithString: "")
     private let modeControl = NSSegmentedControl(labels: DisplayMode.desktopModes.map(\.title), trackingMode: .selectOne, target: nil, action: nil)
     private let desktopCardSwitch = NSSwitch()
+    private let quotaPeriodControl = NSSegmentedControl(labels: QuotaPeriod.allCases.map(\.title), trackingMode: .selectOne, target: nil, action: nil)
     private let alwaysOnTopSwitch = NSSwitch()
     private let launchAtLoginSwitch = NSSwitch()
     private let notificationsSwitch = NSSwitch()
@@ -123,6 +124,8 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         themeDescription.textColor = .secondaryLabelColor
         modeControl.target = self
         modeControl.action = #selector(modeChanged)
+        quotaPeriodControl.target = self
+        quotaPeriodControl.action = #selector(quotaPeriodChanged)
 
         desktopCardSwitch.target = self
         desktopCardSwitch.action = #selector(desktopCardChanged)
@@ -182,6 +185,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         stack.distribution = .fill
         stack.spacing = 13
         stack.edgeInsets = NSEdgeInsets(top: 18, left: 18, bottom: 18, right: 18)
+        stack.addArrangedSubview(row(label: "额度周期", control: quotaPeriodControl))
         stack.addArrangedSubview(row(label: "皮肤", control: themeControl))
         stack.addArrangedSubview(row(label: "背景图片", control: backgroundControl))
         stack.addArrangedSubview(row(label: "图片方式", control: backgroundModePopup))
@@ -327,6 +331,7 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
             themePopup.selectItem(at: index)
         }
         updateThemeDescription()
+        quotaPeriodControl.selectedSegment = QuotaPeriod.allCases.firstIndex(of: preferences.quotaPeriod) ?? 1
         modeControl.selectedSegment = DisplayMode.desktopModes.firstIndex(of: preferences.displayMode) ?? 1
         desktopCardSwitch.state = preferences.showDesktopCard ? .on : .off
         alwaysOnTopSwitch.state = preferences.alwaysOnTop ? .on : .off
@@ -369,10 +374,12 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         preview.backgroundImageOpacity = preferences.backgroundImageOpacity
         preview.backgroundImageMode = preferences.backgroundImageMode
         preview.alphaValue = CGFloat(preferences.overallOpacity)
-        preview.quota = WeeklyQuota(
+        let period = preferences.quotaPeriod
+        preview.quotaPeriod = period
+        preview.quota = QuotaWindow(
             usedPercent: 28,
-            resetsAt: now.addingTimeInterval(4 * 86_400 + 8 * 3_600),
-            windowDurationMins: 10_080,
+            resetsAt: now.addingTimeInterval(period == .fiveHours ? 3 * 3_600 + 20 * 60 : 4 * 86_400 + 8 * 3_600),
+            windowDurationMins: period.windowDurationMins,
             updatedAt: now
         )
         preview.now = now
@@ -407,6 +414,13 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
     @objc private func modeChanged() {
         guard modeControl.selectedSegment >= 0 else { return }
         preferences.displayMode = DisplayMode.desktopModes[modeControl.selectedSegment]
+        updatePreview()
+        onPreferencesChanged?()
+    }
+
+    @objc private func quotaPeriodChanged() {
+        guard QuotaPeriod.allCases.indices.contains(quotaPeriodControl.selectedSegment) else { return }
+        preferences.quotaPeriod = QuotaPeriod.allCases[quotaPeriodControl.selectedSegment]
         updatePreview()
         onPreferencesChanged?()
     }
