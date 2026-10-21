@@ -10,7 +10,7 @@ channel="${RELEASE_CHANNEL:-local}"
 suffix="${version}-${channel}"
 
 mkdir -p "${release_dir}" "${updates_dir}"
-OUTPUT_DIR="${app_output_dir}" "${project_dir}/scripts/build_app.sh" >/dev/null
+OUTPUT_DIR="${app_output_dir}" "${project_dir}/scripts/build_app.sh" >&2
 app_path="${app_output_dir}/Codex Usage Strip.app"
 zip_path="${updates_dir}/Codex-Usage-Strip-${suffix}.zip"
 dmg_path="${release_dir}/Codex-Usage-Strip-${suffix}.dmg"
