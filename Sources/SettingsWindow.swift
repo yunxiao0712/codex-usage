@@ -376,9 +376,12 @@ final class SettingsWindowController: NSWindowController, NSTextFieldDelegate {
         preview.alphaValue = CGFloat(preferences.overallOpacity)
         let period = preferences.quotaPeriod
         preview.quotaPeriod = period
+        // 3 hours 20 minutes for the short window, 4 days 8 hours for weekly.
+        let resetInterval: TimeInterval = period == .fiveHours ? 12_000 : 374_400
+        let resetsAt = now.addingTimeInterval(resetInterval)
         preview.quota = QuotaWindow(
             usedPercent: 28,
-            resetsAt: now.addingTimeInterval(period == .fiveHours ? 3 * 3_600 + 20 * 60 : 4 * 86_400 + 8 * 3_600),
+            resetsAt: resetsAt,
             windowDurationMins: period.windowDurationMins,
             updatedAt: now
         )
